@@ -34,8 +34,11 @@ cd ~/bin || { echo 'FATAL: cd failed.' >&2; exit 1; }
 echo 'Installing cpanm ...'
 wget -q "$cpanm" || { echo 'FATAL: Unable to fetch cpanm sources.' >&2; exit 1; }
 chmod +x cpanm
+# TODO check if modules installed correctly?
 ./cpanm -n YAML::Tiny LWP::UserAgent::POE Net::Twitter::Lite POE::Component::IRC::State
 
+echo
+echo '---'
 echo 'Installing twircer ...'
 wget -q "$twircer" || { echo 'FATAL: Unable to fetch twircer sources.' >&2; exit 1; }
 chmod +x twircer
