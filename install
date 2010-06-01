@@ -6,6 +6,7 @@ PATH=/bin:/usr/bin
 # TODO Add checks for wget, etc. ?
 # TODO Make script local-lib version agnostic ?
 # FIXME Assumes users shell is bash
+# FIXME Does not take into account a user-local Perl 
 
 cpanm='http://xrl.us/cpanm'
 local_lib='http://search.cpan.org/CPAN/authors/id/M/MS/MSTROUT/local-lib-1.006000.tar.gz'
