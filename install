@@ -10,7 +10,8 @@ PATH=/bin:/usr/bin
 
 cpanm='http://xrl.us/cpanm'
 local_lib='http://search.cpan.org/CPAN/authors/id/M/MS/MSTROUT/local-lib-1.006000.tar.gz'
-twircer='http://www.redbrick.dcu.ie/~goldfish/twircer'
+#twircer='http://www.redbrick.dcu.ie/~goldfish/twircer'
+twircer='http://github.com/crazy4swayze/twircer/raw/master/twircer'
 
 echo 'Installing local-lib ...'
 wget -q "$local_lib" || { echo 'FATAL: Unable to fetch local-lib sources.' >&2; exit 1; }
