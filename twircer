@@ -10,6 +10,7 @@ use YAML::Tiny qw<LoadFile>;
 # SHOULD NOT BE USED FOR NEW DEVELOPMENT
 # FORGIVE ME GOD
 
+# TODO Add logging?
 # FIXME: Should $ENV{HOME} be used?
 my $config_file = $ENV{HOME} . '/.twircer/config';
 
