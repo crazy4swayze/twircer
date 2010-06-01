@@ -1,0 +1,8 @@
+IRC bot that uses POE::Component::IRC::State and Net::Twitter::Lite.
+It tweets all uppercase lines that contain a user-defined 'trigger'.
+
+The install script uses local::lib and cpanm (App::cpanminus) to set
+up a user-local Perl module library and install the needed modules.
+
+It is specific to my shell/hosting provider. ( The '@followers' command
+anyway. )
