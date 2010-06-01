@@ -7,5 +7,5 @@ up a user-local Perl module library and install the needed modules.
 It is specific to my shell/hosting provider. ( The '@followers' command
 anyway. )
 
-'twircer' is just here for show, 'install' does all the work.
+'twircer' is just here for storage, 'install' does all the work.
 ( Not that this is intended to be used by anyone. )
