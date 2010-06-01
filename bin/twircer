@@ -33,7 +33,7 @@ my ( $irc, $twitter );
 
 POE::Session->create(
    package_states => [ 
-       'main' => [qw(_start irc_001 irc_public)], 
+       'main' => [qw(_start irc_001 irc_public)],
    ]
 );
 
