@@ -32,7 +32,10 @@ my $trigger  = $config->{trigger}  || die "Error: No trigger defined.\n";
 my ( $irc, $twitter );
 
 POE::Session->create(
-   package_states => [ 'main' => [qw(_start irc_001 irc_public)], ], );
+   package_states => [ 
+       'main' => [qw(_start irc_001 irc_public)], 
+   ]
+);
 
 $poe_kernel->run();
 exit 0;
