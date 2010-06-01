@@ -43,7 +43,7 @@ echo 'Installing twircer ...'
 wget -q "$twircer" || { echo 'FATAL: Unable to fetch twircer sources.' >&2; exit 1; }
 chmod +x twircer
 
-mkdir -p ~/.twircer || { echo 'FATAL: Unable to create ~/.twircer/' >&2; exit 1; }
+mkdir ~/.twircer &>/dev/null || { echo 'FATAL: Unable to create ~/.twircer/' >&2; exit 1; }
 cat > ~/.twircer/config <<EOF
 # example configuration MUST BE EDITED!!!!!!
 # nick: doejuffy
