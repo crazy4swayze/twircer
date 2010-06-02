@@ -14,10 +14,14 @@ cpanm='http://xrl.us/cpanm'
 local_lib="http://search.cpan.org/CPAN/authors/id/$local_lib_version"
 twircer='http://github.com/crazy4swayze/twircer/raw/master/twircer'
 
+tarball_name="${local_lib_version##*/}"
+workdir="${tarball_name%.tar.gz}"
+
 echo 'Installing local-lib ...'
 wget -q "$local_lib" || { echo 'FATAL: Unable to fetch local-lib sources.' >&2; exit 1; }
-tar xzf local-lib-1.006000.tar.gz
-cd local-lib-1.006000 || { echo 'FATAL: cd failed.' >&2; exit 1; }
+
+tar xzf "$tarball_name"
+cd "$workdir" || { echo 'FATAL: cd failed.' >&2; exit 1; }
 yes | perl Makefile.PL --bootstrap --no-manpages &> /dev/null
 { make test && make install; } &>/dev/null || { echo 'FATAL: Unable to install local-lib.' >&2; exit 1; }
 
@@ -25,7 +29,7 @@ yes | perl Makefile.PL --bootstrap --no-manpages &> /dev/null
 echo 'eval $(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)' >>~/.bashrc
 
 cd .. || { echo 'FATAL: cd failed.' >&2; exit 1; }
-rm -rf local-lib-1.006000.tar.gz local-lib-1.006000/
+rm -rf "$workdir/" "$tarball_name"
 
 # TODO source bashrc to read local::lib's variables
 # Is there a better way to do this?
