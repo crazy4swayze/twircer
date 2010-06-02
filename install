@@ -4,13 +4,14 @@ UMASK=0077
 PATH=/bin:/usr/bin
 
 # TODO Add checks for wget, etc. ?
-# TODO Make script local-lib version agnostic ?
 # FIXME Assumes users shell is bash
 # FIXME Does not take into account a user-local Perl 
 
+local_lib_version=$(wget -q -O - http://cpanmetadb.appspot.com/v1.0/package/local::lib | awk '$1=="distfile:"{ print $2 }')
+[[ $local_lib_version = *.tar.gz ]] || { echo 'FATAL: Unable to detect latest version of local::lib' >&2; exit 1; }
+
 cpanm='http://xrl.us/cpanm'
-local_lib='http://search.cpan.org/CPAN/authors/id/M/MS/MSTROUT/local-lib-1.006000.tar.gz'
-#twircer='http://www.redbrick.dcu.ie/~goldfish/twircer'
+local_lib="http://search.cpan.org/CPAN/authors/id/$local_lib_version"
 twircer='http://github.com/crazy4swayze/twircer/raw/master/twircer'
 
 echo 'Installing local-lib ...'
