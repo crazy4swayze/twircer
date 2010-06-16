@@ -31,9 +31,8 @@ echo 'eval $(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)' >>~/.bashrc
 cd .. || { echo 'FATAL: cd failed.' >&2; exit 1; }
 rm -rf "$workdir/" "$tarball_name"
 
-# TODO source bashrc to read local::lib's variables
-# Is there a better way to do this?
-source ~/.bashrc
+# update current environment so cpanm uses our local::lib 
+eval $(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)
 
 mkdir -p ~/bin
 cd ~/bin || { echo 'FATAL: cd failed.' >&2; exit 1; }
@@ -42,7 +41,7 @@ echo 'Installing cpanm ...'
 wget -q "$cpanm" || { echo 'FATAL: Unable to fetch cpanm sources.' >&2; exit 1; }
 chmod +x cpanm
 # TODO check if modules installed correctly?
-./cpanm -n YAML::Tiny LWP::UserAgent::POE Net::Twitter::Lite POE::Component::IRC::State
+./cpanm -n YAML::Tiny LWP::UserAgent::POE Net::Twitter POE::Component::IRC::State
 
 echo
 echo '---'
