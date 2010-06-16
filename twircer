@@ -17,7 +17,7 @@ die "Unable to open config file.\n" unless -e $config_file;
 
 chmod 0600, $config_file;
 
-my $config = LoadFile($config_file);
+my $config = LoadFile( $config_file );
 
 die "Please setup your configuration file!\n" if defined $config->{edited};
 
@@ -67,7 +67,7 @@ sub _start {
 }
 
 sub irc_001 {
-   for my $chan (@$channels) {
+   for my $chan ( @$channels ) {
       $irc->yield( join => $chan );
    }
 }
