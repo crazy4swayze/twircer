@@ -2,21 +2,19 @@
 
 use strict;
 use warnings;
-use Net::Twitter::Lite;
-use POE qw<Component::IRC::State>;
-use YAML::Tiny qw<LoadFile>;
+use Net::Twitter;
+use POE qw(Component::IRC::State);
+use Try::Tiny;
+use YAML::Tiny qw(LoadFile);
 
 # PERL IS UNREADABLE
 # SHOULD NOT BE USED FOR NEW DEVELOPMENT
 # FORGIVE ME GOD
 
-# TODO Add logging?
-# FIXME: Should $ENV{HOME} be used?
 my $config_file = $ENV{HOME} . '/.twircer/config';
 
 die "Unable to open config file.\n" unless -e $config_file;
 
-# FIXME: SHOULD THIS BE DONE?
 chmod 0600, $config_file;
 
 my $config = LoadFile($config_file);
@@ -30,12 +28,14 @@ my $username = $config->{username} || die "Error: No username defined.\n";
 my $password = $config->{password} || die "Error: No password defined.\n";
 my $trigger  = $config->{trigger}  || die "Error: No trigger defined.\n";
 
-my ( $irc, $twitter );
+my ( $irc, $twitter, $mention_id );
 
-POE::Session->create(
-   package_states => [ 
-       'main' => [qw(_start irc_001 irc_public)]
-   ]
+POE::Session->create( 
+    package_states => [ 
+        'main' => [ 
+            qw(_start irc_001 irc_public check_mentions) 
+        ], 
+    ], 
 );
 
 $poe_kernel->run();
@@ -47,21 +47,23 @@ sub _start {
       username => $nick,
       server   => $server,
       debug    => 1,
-
-      #        plugin_debug => 1,
-      #        options => { trace => 0 },
    ) or die "Unable to spawn IRC session.\n";
 
-   $twitter = Net::Twitter::Lite->new(
+   $irc->yield( register => 'all' );
+   $irc->yield( connect  => {} );
+
+   $twitter = Net::Twitter->new(
       username        => $username,
       password        => $password,
-      traits          => ['API::REST'],
+      traits          => [qw(API::REST RetryOnError)],
       useragent_class => 'LWP::UserAgent::POE',
       source          => '',
    );
 
-   $irc->yield( register => 'all' );
-   $irc->yield( connect  => {} );
+   my $mentions = $twitter->mentions();
+   $mention_id = $mentions->[0]->{id};
+
+   $_[KERNEL]->delay( check_mentions => 60 );
 }
 
 sub irc_001 {
@@ -73,16 +75,18 @@ sub irc_001 {
 sub irc_public {
    my ( $who, $where, $msg ) = @_[ ARG0 .. ARG2 ];
 
+   # ignore messages from self
+   my ($sender_nick) = split /!/, $who;
+   return if $sender_nick eq $nick;
+
    my $channel = $where->[0];
 
    if ( $msg eq '@followers' ) {
 
-      # FIXME: Should $ENV{HOME} be used?
       my $logfile = $ENV{HOME} . '/public_html/followers';
 
       open my $fh, '>', $logfile or do {
-         $irc->yield(
-            privmsg => $channel => "Error: Unable to open $logfile" );
+         $irc->yield( privmsg => $channel, "Error: Unable to open $logfile" );
          return;
       };
       chmod 0644, $logfile;
@@ -93,8 +97,9 @@ sub irc_public {
       print $fh $_->{screen_name}, "\n" for @$followers;
 
       my $whoami = getpwuid($<);
-      $irc->yield( privmsg => $channel =>
-            "$amount followers. See http://www.redbrick.dcu.ie/~$whoami/followers"
+      $irc->yield(
+         privmsg => $channel,
+         "$amount followers. See http://www.redbrick.dcu.ie/~$whoami/followers"
       );
    }
 
@@ -108,6 +113,7 @@ sub irc_public {
    # Except lines that begin with '@'
    # This allows tweets to be addressed to other twats
    if ( $msg =~ /^@\w+ / or $msg !~ /[a-z]/ ) {
+
       if ( length $msg > 140 ) {
          my $error
             = 'Your message was too long: '
@@ -116,28 +122,63 @@ sub irc_public {
          $irc->yield( privmsg => $channel, $error );
          return;
       }
-      eval { $twitter->update($msg) };
 
-      # FIXME: Print proper error message?
-      if ($@) {
-         $irc->yield(
-            privmsg => $channel,
-            'ACHTUNG!!! I was unable to tweet!'
-         );
+      if ( $msg =~ /^@\Q$nick / ) {
+         my $error = "I'm not going to tweet myself you fucking retard.";
+         $irc->yield( privmsg => $channel, $error );
+         return;
       }
+
+      try {
+         $twitter->update($msg);
+      }
+      catch {
+         warn "Unable to tweet: $_";
+         $irc->yield( privmsg => $channel, 'ACHTUNG!!! Failed to tweet!' );
+      };
    }
 }
 
 sub _get_followers {
 
-   # Example taken from Net::Twitter documentation
-   # FIXME: Error checking?
-   # FIXME: THIS TAKES LIKE 5 SECONDS, I WOULD LIKE IT TO BE INSTANT KTNX
+   # Example taken from Net::Twitter docs
+   # PAGING APPEARS TO BE PAINFULLY SLOW
    my @followers;
 
    for ( my $cursor = -1, my $r; $cursor; $cursor = $r->{next_cursor} ) {
-      $r = $twitter->followers( { cursor => $cursor } );
+      try {
+         $r = $twitter->followers( { cursor => $cursor } );
+      }
+      catch {
+         warn "Error getting followers: $_";
+      };
       push @followers, @{ $r->{users} };
    }
    return \@followers;
+}
+
+sub check_mentions {
+
+   $_[KERNEL]->delay( check_mentions => 60 );
+
+   my @mentions;
+   try {
+      @mentions = @{ $twitter->mentions( { since_id => $mention_id } ) };
+   }
+   catch {
+      warn "Error getting mentions: $_";
+   };
+
+   return unless @mentions;
+
+   $mention_id = $mentions[0]->{id};
+   for my $mention (@mentions) {
+      for my $chan (@$channels) {
+         $irc->yield(
+            privmsg => $chan,
+            "<$mention->{user}->{screen_name}> $mention->{text}"
+         );
+      }
+   }
+
 }
