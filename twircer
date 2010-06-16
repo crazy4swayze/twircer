@@ -172,8 +172,9 @@ sub check_mentions {
    return unless @mentions;
 
    $mention_id = $mentions[0]->{id};
-   for my $mention (@mentions) {
-      for my $chan (@$channels) {
+
+   for my $mention ( @mentions ) {
+      for my $chan ( @$channels ) {
          $irc->yield(
             privmsg => $chan,
             "<$mention->{user}->{screen_name}> $mention->{text}"
