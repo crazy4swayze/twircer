@@ -76,7 +76,7 @@ sub irc_public {
    my ( $who, $where, $msg ) = @_[ ARG0 .. ARG2 ];
 
    # ignore messages from self
-   my ($sender_nick) = split /!/, $who;
+   my ( $sender_nick ) = split /!/, $who;
    return if $sender_nick eq $nick;
 
    my $channel = $where->[0];
