@@ -83,13 +83,13 @@ sub irc_public {
 
    if ( $msg eq '@followers' ) {
 
-      my $logfile = $ENV{HOME} . '/public_html/followers';
+      my $followfile = $ENV{HOME} . '/public_html/followers';
 
-      open my $fh, '>', $logfile or do {
-         $irc->yield( privmsg => $channel, "Error: Unable to open $logfile" );
+      open my $fh, '>', $followfile or do {
+         $irc->yield( privmsg => $channel, "Error: Unable to open $followfile" );
          return;
       };
-      chmod 0644, $logfile;
+      chmod 0644, $followfile;
 
       my $followers = _get_followers();
       my $amount    = @$followers;
