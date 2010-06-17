@@ -61,7 +61,7 @@ sub _start {
    );
 
    my $mentions = $twitter->mentions();
-   $mention_id = $mentions->[0]->{id};
+   $mention_id  = $mentions->[0]->{id};
 
    $_[KERNEL]->delay( check_mentions => 60 );
 }
